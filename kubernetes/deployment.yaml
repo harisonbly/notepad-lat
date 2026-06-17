@@ -1,0 +1,38 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: notepad-web
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: notepad
+  template:
+    metadata:
+      labels:
+        app: notepad
+    spec:
+      containers:
+      - name: web
+        image: notepad-saas:latest
+        ports:
+        - containerPort: 5000
+        resources:
+          requests:
+            cpu: 250m
+            memory: 512Mi
+          limits:
+            cpu: 500m
+            memory: 1Gi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: notepad-service
+spec:
+  type: LoadBalancer
+  ports:
+  - port: 80
+    targetPort: 5000
+  selector:
+    app: notepad

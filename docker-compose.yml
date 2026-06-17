@@ -1,0 +1,43 @@
+version: '3.8'
+services:
+  db:
+    image: postgres:15-alpine
+    container_name: notepad-db
+    environment:
+      POSTGRES_DB: notepad_saas
+      POSTGRES_USER: notepad_user
+      POSTGRES_PASSWORD: secure_password_change_this
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - notepad-network
+  redis:
+    image: redis:7-alpine
+    container_name: notepad-redis
+    ports:
+      - "6379:6379"
+    networks:
+      - notepad-network
+  web:
+    build: .
+    container_name: notepad-web
+    environment:
+      FLASK_ENV: production
+      DATABASE_URL: postgresql://notepad_user:secure_password_change_this@db:5432/notepad_saas
+      REDIS_URL: redis://redis:6379/0
+    ports:
+      - "5000:5000"
+    depends_on:
+      - db
+      - redis
+    volumes:
+      - ./logs:/app/logs
+    networks:
+      - notepad-network
+volumes:
+  postgres_data:
+networks:
+  notepad-network:
+    driver: bridge
